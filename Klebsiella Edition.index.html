@@ -1,0 +1,260 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Klebsiella Tic-Tac-Toe</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f7f7fb;
+    }
+    .card{
+      width: min(520px, 92vw);
+      background: #fff;
+      border: 1px solid #e8e8ef;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+    }
+    h1{ margin: 0 0 8px; font-size: 22px; }
+    .sub{ margin: 0 0 14px; color: #555; font-size: 14px; line-height: 1.35; }
+    .topbar{
+      display:flex; gap:12px; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+    .status{
+      font-weight: 600;
+      background:#f1f1f8;
+      border:1px solid #e2e2f0;
+      padding:8px 10px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+    button{
+      border:0;
+      background:#111;
+      color:#fff;
+      padding:10px 12px;
+      border-radius: 12px;
+      cursor:pointer;
+      font-weight: 650;
+    }
+    button:active{ transform: translateY(1px); }
+    .board{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 12px 0;
+    }
+    .cell{
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      border: 1px solid #e5e5ef;
+      background: #fafafe;
+      display:grid;
+      place-items:center;
+      font-size: 44px;
+      cursor: pointer;
+      user-select:none;
+      transition: transform .06s ease, background .2s ease;
+    }
+    .cell:hover{ background:#f2f2ff; }
+    .cell:active{ transform: scale(.99); }
+    .cell.disabled{
+      cursor:not-allowed;
+      background:#f7f7fb;
+    }
+    .legend{
+      display:flex; gap: 10px; flex-wrap: wrap;
+      font-size: 13px; color:#444;
+      margin-top: 10px;
+    }
+    .pill{
+      background:#f1f1f8;
+      border:1px solid #e2e2f0;
+      padding:6px 10px;
+      border-radius: 999px;
+    }
+    .fact{
+      margin-top: 10px;
+      color:#444;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .winline{
+      margin-top: 10px;
+      font-size: 13px;
+      color:#2b2b2b;
+      font-weight: 650;
+    }
+    footer{
+      margin-top: 14px;
+      font-size: 12px;
+      color:#666;
+    }
+    a{ color:#111; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🦠 Klebsiella Tic-Tac-Toe</h1>
+    <p class="sub">
+      Beat the bug! You are <b>🧼</b> (hand hygiene). Klebsiella is <b>🦠</b>.
+      Get 3 in a row to win.
+    </p>
+
+    <div class="topbar">
+      <div class="status" id="status">Your turn: 🧼</div>
+      <button id="resetBtn" type="button">Reset</button>
+    </div>
+
+    <div class="board" id="board" aria-label="Tic tac toe board"></div>
+
+    <div class="legend">
+      <span class="pill">🧼 = Hand hygiene (YOU)</span>
+      <span class="pill">🦠 = Klebsiella</span>
+    </div>
+
+    <div class="fact" id="fact"></div>
+    <div class="winline" id="winline"></div>
+
+    <footer>
+      Tip: Upload this as <code>index.html</code> to GitHub Pages to share a link.
+    </footer>
+  </div>
+
+<script>
+(() => {
+  const HUMAN = "🧼";
+  const AI    = "🦠";
+
+  const facts = [
+    "Klebsiella often forms mucoid colonies because of its polysaccharide capsule.",
+    "It’s a Gram-negative rod and can be a lactose fermenter (pink on MacConkey).",
+    "Healthcare-associated infections: pneumonia, UTIs, bloodstream infections.",
+    "Hand hygiene + proper PPE are key for preventing transmission.",
+    "Some strains can carry ESBL or carbapenemase resistance mechanisms."
+  ];
+
+  const boardEl = document.getElementById("board");
+  const statusEl = document.getElementById("status");
+  const factEl = document.getElementById("fact");
+  const winlineEl = document.getElementById("winline");
+  const resetBtn = document.getElementById("resetBtn");
+
+  let board = Array(9).fill(null);
+  let gameOver = false;
+
+  function setRandomFact() {
+    factEl.textContent = "Fun fact: " + facts[Math.floor(Math.random() * facts.length)];
+  }
+
+  function render() {
+    boardEl.innerHTML = "";
+    board.forEach((v, i) => {
+      const cell = document.createElement("div");
+      cell.className = "cell" + (v || gameOver ? " disabled" : "");
+      cell.textContent = v || "";
+      cell.setAttribute("role", "button");
+      cell.setAttribute("aria-label", `Cell ${i + 1}`);
+      cell.addEventListener("click", () => onHumanMove(i));
+      boardEl.appendChild(cell);
+    });
+  }
+
+  function lines() {
+    return [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+  }
+
+  function winner(b) {
+    for (const [a,c,d] of lines()) {
+      if (b[a] && b[a] === b[c] && b[a] === b[d]) return b[a];
+    }
+    return null;
+  }
+
+  function isDraw(b) {
+    return b.every(Boolean) && !winner(b);
+  }
+
+  function endGame(msg) {
+    gameOver = true;
+    statusEl.textContent = msg;
+    winlineEl.textContent = "Tap Reset to play again.";
+    render();
+  }
+
+  function onHumanMove(i) {
+    if (gameOver || board[i]) return;
+    board[i] = HUMAN;
+    setRandomFact();
+
+    const w = winner(board);
+    if (w === HUMAN) return endGame("You win! 🧼 beats 🦠");
+    if (isDraw(board)) return endGame("Draw! Nobody wins this round.");
+
+    // Klebsiella move (simple AI: win > block > random)
+    statusEl.textContent = "Klebsiella thinking… 🦠";
+    setTimeout(() => {
+      klebMove();
+      const w2 = winner(board);
+      if (w2 === AI) return endGame("Klebsiella wins! 🦠");
+      if (isDraw(board)) return endGame("Draw! Nobody wins this round.");
+      statusEl.textContent = "Your turn: 🧼";
+      render();
+    }, 220);
+  }
+
+  function klebMove() {
+    const empty = board.map((v,i) => v ? null : i).filter(v => v !== null);
+
+    // 1) If Kleb can win, do it.
+    for (const i of empty) {
+      const copy = board.slice();
+      copy[i] = AI;
+      if (winner(copy) === AI) { board[i] = AI; setRandomFact(); return; }
+    }
+
+    // 2) If Human can win next, block.
+    for (const i of empty) {
+      const copy = board.slice();
+      copy[i] = HUMAN;
+      if (winner(copy) === HUMAN) { board[i] = AI; setRandomFact(); return; }
+    }
+
+    // 3) Otherwise take center if open, else random.
+    if (!board[4]) { board[4] = AI; setRandomFact(); return; }
+
+    const pick = empty[Math.floor(Math.random() * empty.length)];
+    board[pick] = AI;
+    setRandomFact();
+  }
+
+  function reset() {
+    board = Array(9).fill(null);
+    gameOver = false;
+    statusEl.textContent = "Your turn: 🧼";
+    winlineEl.textContent = "";
+    setRandomFact();
+    render();
+  }
+
+  resetBtn.addEventListener("click", reset);
+
+  // init
+  reset();
+})();
+</script>
+</body>
+</html>
