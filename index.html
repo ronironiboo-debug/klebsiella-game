@@ -1,259 +1,349 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Klebsiella Tic-Tac-Toe</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Build the Organism — MLT Edition (Klebsiella)</title>
   <style>
-    :root { color-scheme: light; }
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: #f7f7fb;
-    }
-    .card{
-      width: min(520px, 92vw);
-      background: #fff;
-      border: 1px solid #e8e8ef;
-      border-radius: 16px;
-      padding: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.06);
-    }
-    h1{ margin: 0 0 8px; font-size: 22px; }
-    .sub{ margin: 0 0 14px; color: #555; font-size: 14px; line-height: 1.35; }
-    .topbar{
-      display:flex; gap:12px; justify-content: space-between; align-items: center;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .status{
-      font-weight: 600;
-      background:#f1f1f8;
-      border:1px solid #e2e2f0;
-      padding:8px 10px;
-      border-radius: 12px;
-      font-size: 14px;
-    }
-    button{
-      border:0;
-      background:#111;
-      color:#fff;
-      padding:10px 12px;
-      border-radius: 12px;
-      cursor:pointer;
-      font-weight: 650;
-    }
-    button:active{ transform: translateY(1px); }
-    .board{
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin: 12px 0;
-    }
-    .cell{
-      aspect-ratio: 1 / 1;
-      border-radius: 14px;
-      border: 1px solid #e5e5ef;
-      background: #fafafe;
+    body{
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:#f7f7fb;
+      margin:0;
+      min-height:100vh;
       display:grid;
       place-items:center;
-      font-size: 44px;
-      cursor: pointer;
-      user-select:none;
-      transition: transform .06s ease, background .2s ease;
+      color:#111;
     }
-    .cell:hover{ background:#f2f2ff; }
-    .cell:active{ transform: scale(.99); }
-    .cell.disabled{
-      cursor:not-allowed;
-      background:#f7f7fb;
+    .card{
+      width:min(820px, 94vw);
+      background:#fff;
+      border:1px solid #e9e9f2;
+      border-radius:18px;
+      padding:22px;
+      box-shadow:0 12px 34px rgba(0,0,0,.07);
     }
-    .legend{
-      display:flex; gap: 10px; flex-wrap: wrap;
-      font-size: 13px; color:#444;
-      margin-top: 10px;
+    h1{margin:0 0 6px;font-size:22px}
+    .sub{margin:0 0 14px;color:#555;line-height:1.35;font-size:14px}
+    .top{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      flex-wrap:wrap; margin:10px 0 16px;
     }
     .pill{
-      background:#f1f1f8;
-      border:1px solid #e2e2f0;
-      padding:6px 10px;
-      border-radius: 999px;
+      background:#f1f1f8; border:1px solid #e2e2f0;
+      padding:8px 10px; border-radius:999px; font-weight:650; font-size:13px;
     }
-    .fact{
-      margin-top: 10px;
-      color:#444;
-      font-size: 13px;
-      line-height: 1.35;
+    button{
+      border:0; background:#111; color:#fff; padding:10px 12px;
+      border-radius:12px; cursor:pointer; font-weight:700;
     }
-    .winline{
-      margin-top: 10px;
-      font-size: 13px;
-      color:#2b2b2b;
-      font-weight: 650;
+    button.secondary{background:#f1f1f8;color:#111;border:1px solid #e2e2f0;}
+    .grid{display:grid; grid-template-columns: 1fr; gap:14px;}
+    .q{
+      border:1px solid #ececf6;
+      border-radius:16px;
+      padding:14px;
+      background:#fcfcff;
     }
-    footer{
-      margin-top: 14px;
-      font-size: 12px;
-      color:#666;
+    .q h2{margin:0 0 10px; font-size:16px}
+    .opts{display:grid; gap:10px}
+    .opt{
+      display:flex; gap:10px; align-items:flex-start;
+      padding:10px 12px;
+      border:1px solid #e6e6f2;
+      border-radius:14px;
+      background:#fff;
+      cursor:pointer;
+      user-select:none;
+      transition:transform .05s ease, background .2s ease;
     }
-    a{ color:#111; }
+    .opt:hover{background:#f3f3ff}
+    .opt:active{transform:translateY(1px)}
+    .opt input{margin-top:3px}
+    .opt .label{font-size:14px; line-height:1.25}
+    .hint{margin-top:8px; font-size:12px; color:#666}
+    .result{
+      margin-top:16px;
+      border-top:1px solid #eee;
+      padding-top:16px;
+      display:none;
+    }
+    .big{font-size:18px; font-weight:800; margin:0 0 6px}
+    .small{margin:0 0 10px; color:#444; line-height:1.35}
+    .bars{display:grid; gap:10px; margin:10px 0 6px}
+    .barwrap{background:#f1f1f8;border:1px solid #e2e2f0;border-radius:999px; overflow:hidden}
+    .bar{height:12px; width:0%;}
+    .legend{font-size:12px; color:#666}
+    .footer{margin-top:12px; font-size:12px; color:#666}
+    code{background:#f1f1f8;border:1px solid #e2e2f0;padding:2px 6px;border-radius:8px}
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>🦠 Klebsiella Tic-Tac-Toe</h1>
+    <h1>🧪 Build the Organism — MLT Edition</h1>
     <p class="sub">
-      Beat the bug! You are <b>🧼</b> (hand hygiene). Klebsiella is <b>🦠</b>.
-      Get 3 in a row to win.
+      Answer like you’re in the lab. Your choices “build” an organism profile.
+      At the end, see if you built <b>Klebsiella pneumoniae</b> 🦠.
     </p>
 
-    <div class="topbar">
-      <div class="status" id="status">Your turn: 🧼</div>
-      <button id="resetBtn" type="button">Reset</button>
+    <div class="top">
+      <div class="pill" id="progressPill">Progress: 0 / 7</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="secondary" id="clearBtn" type="button">Clear</button>
+        <button id="buildBtn" type="button">Build Result</button>
+      </div>
     </div>
 
-    <div class="board" id="board" aria-label="Tic tac toe board"></div>
+    <div class="grid" id="questions"></div>
 
-    <div class="legend">
-      <span class="pill">🧼 = Hand hygiene (YOU)</span>
-      <span class="pill">🦠 = Klebsiella</span>
+    <div class="result" id="result">
+      <p class="big" id="headline"></p>
+      <p class="small" id="explain"></p>
+
+      <div class="bars">
+        <div>
+          <div class="legend"><b>Klebsiella-likeness</b></div>
+          <div class="barwrap"><div class="bar" id="klebBar"></div></div>
+        </div>
+        <div>
+          <div class="legend"><b>Not Kleb / mixed signals</b></div>
+          <div class="barwrap"><div class="bar" id="otherBar"></div></div>
+        </div>
+      </div>
+
+      <p class="footer" id="summary"></p>
     </div>
 
-    <div class="fact" id="fact"></div>
-    <div class="winline" id="winline"></div>
-
-    <footer>
-      Tip: Upload this as <code>index.html</code> to GitHub Pages to share a link.
-    </footer>
+    <p class="footer">
+      Tip: Save this file as <code>index.html</code> → upload to GitHub → enable Pages → share the link.
+    </p>
   </div>
 
 <script>
 (() => {
-  const HUMAN = "🧼";
-  const AI    = "🦠";
-
-  const facts = [
-    "Klebsiella often forms mucoid colonies because of its polysaccharide capsule.",
-    "It’s a Gram-negative rod and can be a lactose fermenter (pink on MacConkey).",
-    "Healthcare-associated infections: pneumonia, UTIs, bloodstream infections.",
-    "Hand hygiene + proper PPE are key for preventing transmission.",
-    "Some strains can carry ESBL or carbapenemase resistance mechanisms."
+  // Each option has a Kleb score and an "other" score.
+  // The game is educational, not diagnostic; it just checks classic patterns.
+  const QUESTIONS = [
+    {
+      id: "gram",
+      title: "1) Gram stain",
+      hint: "Think: Enterobacterales vs Gram-positive organisms.",
+      options: [
+        { text: "Gram-negative rods", kleb: 2, other: 0, tag: "GNR" },
+        { text: "Gram-positive cocci in chains", kleb: 0, other: 2, tag: "GPC-chains" },
+        { text: "Gram-positive cocci in clusters", kleb: 0, other: 2, tag: "GPC-clusters" },
+        { text: "No bacteria seen", kleb: 0, other: 1, tag: "none" }
+      ]
+    },
+    {
+      id: "mac",
+      title: "2) MacConkey agar",
+      hint: "Lactose fermenters vs non-fermenters.",
+      options: [
+        { text: "Pink colonies (lactose fermenter)", kleb: 2, other: 0, tag: "LF" },
+        { text: "Colorless colonies (non-lactose fermenter)", kleb: 0, other: 2, tag: "NLF" },
+        { text: "No growth on MacConkey", kleb: 0, other: 1, tag: "no-growth" }
+      ]
+    },
+    {
+      id: "colony",
+      title: "3) Colony appearance",
+      hint: "Capsule makes colonies look very mucoid.",
+      options: [
+        { text: "Very mucoid / sticky colonies", kleb: 2, other: 0, tag: "mucoid" },
+        { text: "Dry, flat colonies", kleb: 0, other: 1, tag: "dry" },
+        { text: "Swarming growth pattern", kleb: 0, other: 2, tag: "swarm" }
+      ]
+    },
+    {
+      id: "capsule",
+      title: "4) Virulence clue",
+      hint: "Klebsiella is famous for a thick polysaccharide capsule.",
+      options: [
+        { text: "Prominent capsule present", kleb: 2, other: 0, tag: "capsule" },
+        { text: "No capsule", kleb: 0, other: 1, tag: "no-capsule" }
+      ]
+    },
+    {
+      id: "setting",
+      title: "5) Clinical setting",
+      hint: "Common contexts where Kleb shows up.",
+      options: [
+        { text: "Hospital/ICU or long-term care", kleb: 2, other: 0, tag: "HAI" },
+        { text: "Community sore throat outbreak", kleb: 0, other: 2, tag: "strep" },
+        { text: "Burn wound + blue-green pigment", kleb: 0, other: 2, tag: "pseud" }
+      ]
+    },
+    {
+      id: "site",
+      title: "6) Specimen source (classic associations)",
+      hint: "Not exclusive — just classic teaching patterns.",
+      options: [
+        { text: "Sputum / pneumonia picture", kleb: 2, other: 0, tag: "pna" },
+        { text: "Urine (especially catheter-associated)", kleb: 2, other: 0, tag: "uti" },
+        { text: "Foodborne gastroenteritis", kleb: 0, other: 1, tag: "gi" }
+      ]
+    },
+    {
+      id: "resistance",
+      title: "7) Resistance vibe (bonus lab clue)",
+      hint: "Some strains carry ESBL/carbapenemase. Not all do.",
+      options: [
+        { text: "Possible ESBL / MDR flag noted", kleb: 1, other: 0, tag: "mdr" },
+        { text: "No resistance flags", kleb: 0, other: 0, tag: "none" }
+      ]
+    }
   ];
 
-  const boardEl = document.getElementById("board");
-  const statusEl = document.getElementById("status");
-  const factEl = document.getElementById("fact");
-  const winlineEl = document.getElementById("winline");
-  const resetBtn = document.getElementById("resetBtn");
+  const qWrap = document.getElementById("questions");
+  const progressPill = document.getElementById("progressPill");
+  const clearBtn = document.getElementById("clearBtn");
+  const buildBtn = document.getElementById("buildBtn");
 
-  let board = Array(9).fill(null);
-  let gameOver = false;
+  const resultEl = document.getElementById("result");
+  const headlineEl = document.getElementById("headline");
+  const explainEl = document.getElementById("explain");
+  const summaryEl = document.getElementById("summary");
+  const klebBar = document.getElementById("klebBar");
+  const otherBar = document.getElementById("otherBar");
 
-  function setRandomFact() {
-    factEl.textContent = "Fun fact: " + facts[Math.floor(Math.random() * facts.length)];
-  }
+  // Render questions
+  function renderQuestions() {
+    qWrap.innerHTML = "";
+    QUESTIONS.forEach(q => {
+      const box = document.createElement("div");
+      box.className = "q";
+      box.innerHTML = `
+        <h2>${q.title}</h2>
+        <div class="opts" id="opts-${q.id}"></div>
+        <div class="hint">${q.hint}</div>
+      `;
+      qWrap.appendChild(box);
 
-  function render() {
-    boardEl.innerHTML = "";
-    board.forEach((v, i) => {
-      const cell = document.createElement("div");
-      cell.className = "cell" + (v || gameOver ? " disabled" : "");
-      cell.textContent = v || "";
-      cell.setAttribute("role", "button");
-      cell.setAttribute("aria-label", `Cell ${i + 1}`);
-      cell.addEventListener("click", () => onHumanMove(i));
-      boardEl.appendChild(cell);
+      const optsEl = box.querySelector(`#opts-${q.id}`);
+      q.options.forEach((opt, idx) => {
+        const optId = `${q.id}-${idx}`;
+        const label = document.createElement("label");
+        label.className = "opt";
+        label.setAttribute("for", optId);
+        label.innerHTML = `
+          <input type="radio" name="${q.id}" id="${optId}" value="${idx}">
+          <div class="label">${opt.text}</div>
+        `;
+        optsEl.appendChild(label);
+
+        label.querySelector("input").addEventListener("change", updateProgress);
+      });
     });
   }
 
-  function lines() {
-    return [
-      [0,1,2],[3,4,5],[6,7,8],
-      [0,3,6],[1,4,7],[2,5,8],
-      [0,4,8],[2,4,6]
-    ];
-  }
-
-  function winner(b) {
-    for (const [a,c,d] of lines()) {
-      if (b[a] && b[a] === b[c] && b[a] === b[d]) return b[a];
+  function getAnswers() {
+    const picked = {};
+    for (const q of QUESTIONS) {
+      const el = document.querySelector(`input[name="${q.id}"]:checked`);
+      if (el) picked[q.id] = Number(el.value);
     }
-    return null;
+    return picked;
   }
 
-  function isDraw(b) {
-    return b.every(Boolean) && !winner(b);
+  function updateProgress() {
+    const answers = getAnswers();
+    const count = Object.keys(answers).length;
+    progressPill.textContent = `Progress: ${count} / ${QUESTIONS.length}`;
   }
 
-  function endGame(msg) {
-    gameOver = true;
-    statusEl.textContent = msg;
-    winlineEl.textContent = "Tap Reset to play again.";
-    render();
+  function clearAll() {
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+    updateProgress();
+    resultEl.style.display = "none";
+    klebBar.style.width = "0%";
+    otherBar.style.width = "0%";
   }
 
-  function onHumanMove(i) {
-    if (gameOver || board[i]) return;
-    board[i] = HUMAN;
-    setRandomFact();
-
-    const w = winner(board);
-    if (w === HUMAN) return endGame("You win! 🧼 beats 🦠");
-    if (isDraw(board)) return endGame("Draw! Nobody wins this round.");
-
-    // Klebsiella move (simple AI: win > block > random)
-    statusEl.textContent = "Klebsiella thinking… 🦠";
-    setTimeout(() => {
-      klebMove();
-      const w2 = winner(board);
-      if (w2 === AI) return endGame("Klebsiella wins! 🦠");
-      if (isDraw(board)) return endGame("Draw! Nobody wins this round.");
-      statusEl.textContent = "Your turn: 🧼";
-      render();
-    }, 220);
-  }
-
-  function klebMove() {
-    const empty = board.map((v,i) => v ? null : i).filter(v => v !== null);
-
-    // 1) If Kleb can win, do it.
-    for (const i of empty) {
-      const copy = board.slice();
-      copy[i] = AI;
-      if (winner(copy) === AI) { board[i] = AI; setRandomFact(); return; }
+  function buildResult() {
+    const answers = getAnswers();
+    const answeredCount = Object.keys(answers).length;
+    if (answeredCount < QUESTIONS.length) {
+      alert(`Answer all questions first (${answeredCount}/${QUESTIONS.length}).`);
+      return;
     }
 
-    // 2) If Human can win next, block.
-    for (const i of empty) {
-      const copy = board.slice();
-      copy[i] = HUMAN;
-      if (winner(copy) === HUMAN) { board[i] = AI; setRandomFact(); return; }
+    let klebScore = 0;
+    let otherScore = 0;
+    const tags = [];
+
+    for (const q of QUESTIONS) {
+      const opt = q.options[answers[q.id]];
+      klebScore += opt.kleb;
+      otherScore += opt.other;
+      tags.push(opt.tag);
     }
 
-    // 3) Otherwise take center if open, else random.
-    if (!board[4]) { board[4] = AI; setRandomFact(); return; }
+    const maxKleb = QUESTIONS.reduce((s,q)=>s+Math.max(...q.options.map(o=>o.kleb)),0);
+    const maxOther = QUESTIONS.reduce((s,q)=>s+Math.max(...q.options.map(o=>o.other)),0);
 
-    const pick = empty[Math.floor(Math.random() * empty.length)];
-    board[pick] = AI;
-    setRandomFact();
+    const klebPct = Math.round((klebScore / maxKleb) * 100);
+    const otherPct = Math.round((otherScore / Math.max(1, maxOther)) * 100);
+
+    // Bars (no special colors specified; browser default may be black)
+    klebBar.style.background = "#111";
+    otherBar.style.background = "#666";
+    klebBar.style.width = `${klebPct}%`;
+    otherBar.style.width = `${otherPct}%`;
+
+    // Determine outcome
+    // Threshold tuned for "classic teaching" patterns.
+    let headline = "";
+    let explain = "";
+
+    const hasGNR = tags.includes("GNR");
+    const hasLF  = tags.includes("LF");
+    const hasMucoid = tags.includes("mucoid");
+    const hasCapsule = tags.includes("capsule");
+
+    if (klebScore >= (maxKleb * 0.75) && hasGNR && hasLF && (hasMucoid || hasCapsule)) {
+      headline = "✅ You built: Klebsiella pneumoniae 🦠";
+      explain = "Your choices match the classic lab teaching pattern: Gram-negative rod, lactose fermenter on MacConkey, often mucoid due to capsule, frequently linked to hospital settings and pneumonia/UTIs.";
+    } else if (hasGNR && !hasLF) {
+      headline = "⚠️ You built: A Gram-negative rod… but not classic Kleb";
+      explain = "You picked Gram-negative rods but not lactose fermentation. That leans away from Klebsiella’s classic pattern and toward other non-lactose fermenters.";
+    } else if (!hasGNR) {
+      headline = "❌ Not Klebsiella — different organism profile";
+      explain = "Your Gram-stain choice doesn’t match a classic Enterobacterales GNR pattern, so this build points away from Klebsiella pneumoniae.";
+    } else {
+      headline = "🧩 Mixed build — partially Kleb-like";
+      explain = "You selected some Kleb-associated clues but missed one or more of the classic anchors (GNR + lactose fermenter + mucoid/capsule).";
+    }
+
+    headlineEl.textContent = headline;
+    explainEl.textContent = explain;
+
+    // Summary line: show key traits picked
+    const traitMap = {
+      "GNR":"Gram-negative rod",
+      "LF":"Lactose fermenter (MacConkey pink)",
+      "NLF":"Non-lactose fermenter",
+      "mucoid":"Mucoid colonies",
+      "capsule":"Capsule",
+      "HAI":"Hospital/ICU setting",
+      "pna":"Pneumonia specimen",
+      "uti":"Urine/UTI specimen",
+      "mdr":"MDR/ESBL flag"
+    };
+    const readable = tags
+      .map(t => traitMap[t])
+      .filter(Boolean);
+
+    summaryEl.textContent = `Your build highlights: ${readable.join(" • ")}.`;
+
+    resultEl.style.display = "block";
+    resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function reset() {
-    board = Array(9).fill(null);
-    gameOver = false;
-    statusEl.textContent = "Your turn: 🧼";
-    winlineEl.textContent = "";
-    setRandomFact();
-    render();
-  }
+  clearBtn.addEventListener("click", clearAll);
+  buildBtn.addEventListener("click", buildResult);
 
-  resetBtn.addEventListener("click", reset);
-
-  // init
-  reset();
+  renderQuestions();
+  updateProgress();
 })();
 </script>
 </body>
